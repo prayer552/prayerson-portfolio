@@ -18,7 +18,7 @@
   }
   animateRing();
 
-  document.querySelectorAll('a, button, .skill-card').forEach(el => {
+  document.querySelectorAll('a, button, .skill-card, .project-card, .achievement-card').forEach(el => {
     el.addEventListener('mouseenter', () => {
       cursor.style.transform = 'scale(2)';
       ring.style.transform = 'scale(1.5)';
@@ -36,32 +36,30 @@
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
       if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-        }, (entry.target.dataset.delay || 0) * 100);
+        setTimeout(() => entry.target.classList.add('visible'), (entry.target.dataset.delay || 0) * 100);
       }
     });
   }, { threshold: 0.1 });
 
   reveals.forEach((el, i) => {
-    el.dataset.delay = i % 6;
+    el.dataset.delay = i % 5;
     observer.observe(el);
   });
 
   // Stagger skill cards
   document.querySelectorAll('.skill-card').forEach((card, i) => {
-    card.style.transitionDelay = (i * 0.06) + 's';
+    card.style.transitionDelay = (i * 0.05) + 's';
   });
 
-  // Parallax hero orbs on scroll
+  // Parallax orbs
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
     document.querySelector('.orb1').style.transform = `translate(${y*0.05}px, ${y*0.08}px)`;
     document.querySelector('.orb2').style.transform = `translate(${-y*0.04}px, ${-y*0.06}px)`;
   });
 
-  // Counter animation for stats
-  function animateCounter(el, target, suffix) {
+  // Counter animation
+  function animateCounter(el, target, suffix = '+') {
     let start = 0;
     const dur = 2000;
     const step = (timestamp) => {
@@ -74,11 +72,16 @@
     requestAnimationFrame(step);
   }
 
-  const statsObserver = new IntersectionObserver(entries => {
+  const statsObs = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting) {
-      animateCounter(document.querySelectorAll('.stat-num')[0], 8, '+');
-      animateCounter(document.querySelectorAll('.stat-num')[1], 6, '');
-      statsObserver.disconnect();
+      document.querySelectorAll('.stat-num').forEach(el => {
+        const target = parseInt(el.dataset.target);
+        const suffix = el.dataset.suffix || '';
+        animateCounter(el, target, suffix);
+      });
+      statsObs.disconnect();
     }
   }, { threshold: 0.5 });
-  statsObserver.observe(document.querySelector('.hero-stats'));
+
+  const heroStats = document.querySelector('.hero-stats');
+  if (heroStats) statsObs.observe(heroStats);
